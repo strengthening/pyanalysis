@@ -6,5 +6,5 @@ setup(
     author="strengthening",
     author_email="strengthen2010@gmail.com",
     # url='http://www.you.com/projectname',
-    packages=["pyanalysis"],
+    packages=["pyanalysis", "pyanalysis.database", "pyanalysis.log"],
 )

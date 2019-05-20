@@ -31,7 +31,7 @@ def no_warning(func):
 
 class Conn(object):
     def __init__(self, db_name):
-        self._conn = get[db_name].get_connection()
+        self._conn = get(db_name).get_connection()
 
     @no_warning
     def query_one(self, sql=None, args=None):
