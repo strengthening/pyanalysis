@@ -1,4 +1,3 @@
-import os
 import logging
 
 FATAL = logging.FATAL
@@ -6,18 +5,6 @@ ERROR = logging.ERROR
 WARN = logging.WARN
 INFO = logging.INFO
 DEBUG = logging.DEBUG
-
-# logger pool
-__loggerDict = {}
-
-
-def add(logger):
-    logger_name = logger.get_name()
-    __loggerDict[logger_name] = logger
-
-
-def get(logger_name):
-    return __loggerDict[logger_name]
 
 
 class ILog(object):
@@ -36,7 +23,7 @@ class ILog(object):
 
     def warn(self, msg):
         # 当msg为错误类型时，打印traceback
-        self._logger.warn(msg, exc_info=issubclass(type(msg), BaseException) or isinstance(msg, BaseException))
+        self._logger.warning(msg, exc_info=issubclass(type(msg), BaseException) or isinstance(msg, BaseException))
 
     def error(self, msg):
         # 当msg为错误类型时，打印traceback

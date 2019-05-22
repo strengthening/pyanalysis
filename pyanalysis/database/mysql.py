@@ -9,16 +9,6 @@ mysql_pool.logger.setLevel("ERROR")
 
 __all__ = ["Conn", "Trans"]
 
-__pool = {}
-
-
-def add(pool):
-    __pool[pool.name] = pool
-
-
-def get(pool_name):
-    return __pool[pool_name]
-
 
 def no_warning(func):
     def wrapper(*args, **kw):
@@ -31,7 +21,7 @@ def no_warning(func):
 
 class Conn(object):
     def __init__(self, db_name):
-        self._conn = get(db_name).get_connection()
+        self._conn = mysql_pool.get(db_name).get_connection()
 
     @no_warning
     def query_one(self, sql=None, args=None):

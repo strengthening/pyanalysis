@@ -14,6 +14,17 @@ logger = logging.getLogger(__name__)
 logger.setLevel('WARNING')
 
 
+__pool = {}
+
+
+def add(pool):
+    __pool[pool.name] = pool
+
+
+def get(pool_name):
+    return __pool[pool_name]
+
+
 def set_logger(new_logger):
     logger = new_logger
 
