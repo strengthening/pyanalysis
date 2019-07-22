@@ -1,5 +1,4 @@
 .idea
 .pyc
-dist
 __pycache__
 *.pyc
