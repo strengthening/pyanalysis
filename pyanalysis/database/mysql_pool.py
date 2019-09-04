@@ -4,29 +4,35 @@ import queue
 import logging
 import threading
 import datetime
+import decimal
 
-__all__ = ['Connection', 'ConnectionPool', 'logger']
-
-warnings.filterwarnings('error', category=pymysql.err.Warning)
-# use logging module for easy debug
-logging.basicConfig(format='%(asctime)s %(levelname)8s: %(message)s', datefmt='%m-%d %H:%M:%S')
-logger = logging.getLogger(__name__)
-logger.setLevel('WARNING')
-
-
+__all__ = ["ConnectionPool", "Conn", "Trans"]
 __pool = {}
+
+# set the logger to show the debug or online log
+warnings.filterwarnings("error", category=pymysql.err.Warning)
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler)
 
 
 def add(pool):
+    if not isinstance(pool, ConnectionPool):
+        raise RuntimeError("you must add a connection pool object! ")
     __pool[pool.name] = pool
 
 
 def get(pool_name):
+    if not (pool_name in __pool):
+        raise RuntimeError("can not find the pool named {}. ".format(pool_name))
     return __pool[pool_name]
 
 
-def set_logger(new_logger):
-    logger = new_logger
+def no_warning(func):
+    def wrapper(*args, **kw):
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            return func(*args, **kw)
+    return wrapper
 
 
 class Connection(pymysql.connections.Connection):
@@ -36,7 +42,11 @@ class Connection(pymysql.connections.Connection):
         the __exit__() method additionally put the connection back to it's pool
     """
     _pool = None
-    _reusable_expection = (pymysql.err.ProgrammingError, pymysql.err.IntegrityError, pymysql.err.NotSupportedError)
+    _reusable_expection = (
+        pymysql.err.ProgrammingError,
+        pymysql.err.IntegrityError,
+        pymysql.err.NotSupportedError,
+    )
 
     def __init__(self, *args, **kwargs):
         pymysql.connections.Connection.__init__(self, *args, **kwargs)
@@ -53,29 +63,30 @@ class Connection(pymysql.connections.Connection):
         pymysql.connections.Connection.__exit__(self, exc, value, traceback)
         if self._pool:
             if not exc or exc in self._reusable_expection:
-                '''reusable connection'''
+                """reusable connection. """
                 self._pool.put_connection(self)
             else:
-                '''no reusable connection, close it and create a new one then put it to the pool'''
+                """no reusable connection, close it and create a new one then put it to the pool. """
                 self._pool.put_connection(self._recreate(*self.args, **self.kwargs))
                 self._pool = None
                 try:
                     self.close()
-                    logger.warning("Close not reusable connection from pool(%s) caused by %s", self._pool.name, value)
+                    logger.warning("close not reusable connection from pool(%s) caused by %s", self._pool.name, value)
                 except Exception:
                     pass
 
     def _recreate(self, *args, **kwargs):
         conn = Connection(*args, **kwargs)
-        logger.debug('Create new connection due to pool(%s) lacking', self._pool.name)
+        logger.debug("create new connection due to pool(%s) lacking", self._pool.name)
         return conn
 
+    # if the connection idle too long, ping with reconnect the connection
     def ping(self, reconnect=True):
         expire_datetime = self._last_use_datetime + datetime.timedelta(days=1)
         now = datetime.datetime.now()
         if now > expire_datetime:
             self._last_use_datetime = now
-            super().ping(reconnect=reconnect)
+            super().ping(reconnect=True)
 
     def close(self):
         """
@@ -88,26 +99,6 @@ class Connection(pymysql.connections.Connection):
         else:
             pymysql.connections.Connection.close(self)
 
-    def execute_query(self, query, args=(), dictcursor=False, return_one=False, exec_many=False):
-        """
-        A wrapped method of pymysql's execute() or executemany().
-        dictcursor: whether want use the dict cursor(cursor's default type is tuple)
-        return_one: whether want only one row of the result
-        exec_many: whether use pymysql's executemany() method
-        """
-        with self:
-            cur = self.cursor() if not dictcursor else self.cursor(pymysql.cursors.DictCursor)
-            self._last_use_datetime = datetime.datetime.now()
-            try:
-                if exec_many:
-                    cur.executemany(query, args)
-                else:
-                    cur.execute(query, args)
-            except Exception:
-                raise
-            # if no record match the query, return () if return_one==False, else return None
-            return cur.fetchone() if return_one else cur.fetchall()
-
 
 class ConnectionPool:
     """
@@ -115,21 +106,36 @@ class ConnectionPool:
     put a reusable connection back to the pool, etc; also we can create different instance of this class that represent
     different pool of different DB Server or different user
     """
-    _HARD_LIMIT = 100
+    _MAX_SIZE_LIMIT = 100
+    _MIN_SIZE_LIMIT = 3
     _THREAD_LOCAL = threading.local()
     _THREAD_LOCAL.retry_counter = 0  # a counter used for debug get_connection() method
 
     def __init__(self, size=5, name=None, *args, **kwargs):
-        self._pool = queue.Queue(self._HARD_LIMIT)
+        if size > self._MAX_SIZE_LIMIT:
+            size = self._MAX_SIZE_LIMIT
+            logger.warning(
+                "can not set the pool size to %d, the max pool size is %d.",
+                size,
+                self._MAX_SIZE_LIMIT,
+            )
+
+        if size < self._MIN_SIZE_LIMIT:
+            size = self._MIN_SIZE_LIMIT
+            logger.warning(
+                "The pool size is too small. the min pool size is %d",
+                self._MIN_SIZE_LIMIT,
+            )
+        self._pool = queue.Queue(self._MAX_SIZE_LIMIT)
         self.name = name if name else '-'.join(
             [kwargs.get('host', 'localhost'), str(kwargs.get('port', 3306)),
              kwargs.get('user', ''), kwargs.get('database', '')])
-        for _ in range(size if size < self._HARD_LIMIT else self._HARD_LIMIT):
+        for _ in range(size):
             conn = Connection(*args, **kwargs)
             conn._pool = self
             self._pool.put(conn)
 
-    def get_connection(self, timeout=1, retry_num=1):
+    def get_connection(self, timeout=1, retry_num=2):
         """
         timeout: timeout of get a connection from pool, should be a int(0 means return or raise immediately)
         retry_num: how many times will retry to get a connection
@@ -137,20 +143,28 @@ class ConnectionPool:
         try:
             conn = self._pool.get(timeout=timeout) if timeout > 0 else self._pool.get_nowait()
             conn.ping()
-            logger.debug('Get connection from pool(%s)', self.name)
+            logger.debug("get connection from pool(%s)", self.name)
             return conn
         except queue.Empty:
             if retry_num > 0:
                 self._THREAD_LOCAL.retry_counter += 1
-                logger.debug('Retry get connection from pool(%s), the %d times', self.name,
-                             self._THREAD_LOCAL.retry_counter)
+                logger.debug(
+                    "retry get connection from pool(%s), the %d times",
+                    self.name,
+                    self._THREAD_LOCAL.retry_counter,
+                )
                 retry_num -= 1
                 return self.get_connection(timeout, retry_num)
             else:
                 total_times = self._THREAD_LOCAL.retry_counter + 1
                 self._THREAD_LOCAL.retry_counter = 0
-                raise GetConnectionFromPoolError("can't get connection from pool({}) within {}*{} second(s)".format(
-                    self.name, timeout, total_times))
+                raise GetConnectionFromPoolError(
+                    "can't get connection from pool({}) within {}*{} second(s)".format(
+                        self.name,
+                        timeout,
+                        total_times,
+                    )
+                )
 
     def put_connection(self, conn):
         if not conn._pool:
@@ -158,12 +172,126 @@ class ConnectionPool:
         conn.cursor().close()
         try:
             self._pool.put_nowait(conn)
-            logger.debug("Put connection back to pool(%s)", self.name)
+            logger.debug("put connection back to pool(%s)", self.name)
         except queue.Full:
-            logger.warning("Put connection to pool(%s) error, pool is full, size:%d", self.name, self.size())
+            logger.warning("put connection to pool(%s) error, pool is full, size:%d", self.name, self.size())
 
     def size(self):
         return self._pool.qsize()
+
+
+class Conn(object):
+    def __init__(self, db_name):
+        self._conn = get(db_name).get_connection()
+
+    @staticmethod
+    def _encode_row(row):
+        encoded_row = []
+        for i in range(len(row)):
+            if isinstance(row[i], decimal.Decimal):
+                encoded_row.append(float(row[i]))
+            elif isinstance(row[i], datetime.datetime):
+                encoded_row.append(row[i].strftime("%Y-%m-%d %H:%M:%S"))
+            else:
+                encoded_row.append(row[i])
+        return encoded_row
+
+    @staticmethod
+    def _format_sql(sql):
+        return sql.replace("?", "%s")
+
+    @no_warning
+    def query_one(self, sql=None, args=None):
+        result = None
+        if logger.level <= logging.DEBUG:
+            logger.info(self._format_sql(sql), *args)
+
+        with self._conn.cursor() as cursor:
+            cursor.execute(self._format_sql(sql), args)
+            row = cursor.fetchone()
+            if row:
+                result = dict(zip([desc[0] for desc in cursor.description], self._encode_row(row)))
+        return result
+
+    @no_warning
+    def query(self, sql=None, args=None):
+        result = []
+        if logger.level <= logging.DEBUG:
+            logger.info(self._format_sql(sql), *args)
+
+        with self._conn.cursor() as cursor:
+            cursor.execute(self._format_sql(sql), args)
+            rows = cursor.fetchall()
+            if rows:
+                columns = [desc[0] for desc in cursor.description]
+                result = [dict(zip(columns, self._encode_row(row))) for row in rows]
+        return result
+
+    @no_warning
+    def execute(self, sql=None, args=None):
+        result = -1
+        if logger.level <= logging.DEBUG:
+            logger.info(self._format_sql(sql), *args)
+
+        with self._conn.cursor() as cursor:
+            result = cursor.execute(self._format_sql(sql), args)
+            self._conn.commit()
+        return result
+
+    @no_warning
+    def insert(self, sql=None, args=None):
+        result = -1
+        if logger.level <= logging.DEBUG:
+            logger.info(self._format_sql(sql), *args)
+
+        with self._conn.cursor() as cursor:
+            cursor.execute(self._format_sql(sql), args)
+            result = cursor.lastrowid
+            self._conn.commit()
+        return result
+
+    def __del__(self):
+        # 析构并不是立刻进行
+        if self._conn:
+            self._conn.close()
+
+
+class Trans(Conn):
+    def __init__(self, db_name):
+        super().__init__(db_name)
+        self._conn.begin()
+
+    # tran 将 commit 和 rollback的机会交给调用方
+    @no_warning
+    def execute(self, sql=None, args=None):
+        result = -1
+        if logger.level <= logging.DEBUG:
+            logger.info(self._format_sql(sql), *args)
+
+        try:
+            with self._conn.cursor() as cursor:
+                result = cursor.execute(self._format_sql(sql), args)
+        except Exception as e:
+            print(e)
+        finally:
+            return result
+
+    @no_warning
+    def insert(self, sql=None, args=None):
+        result = -1
+        if logger.level <= logging.DEBUG:
+            logger.info(self._format_sql(sql), *args)
+
+        with self._conn.cursor() as cursor:
+            cursor.execute(self._format_sql(sql), args)
+            result = cursor.lastrowid
+        return result
+
+    def commit(self):
+        self._conn.commit()
+
+    def rollback(self):
+        self._conn.rollback()
 
 
 class GetConnectionFromPoolError(Exception):

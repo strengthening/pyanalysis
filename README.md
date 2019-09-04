@@ -14,4 +14,9 @@ sudo docker build --rm -t docker.lcgc.work/dw/pyanalysis:base .
 sudo docker push docker.lcgc.work/dw/pyanalysis:base
 ```
 
+## unittest  
+
+python3 -m unittest test/log/log.py
+
+
 ## todo 封装邮件组件
