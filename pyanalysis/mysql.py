@@ -15,13 +15,13 @@ logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler)
 
 
-def add(pool):
+def add_pool(pool):
     if not isinstance(pool, ConnectionPool):
         raise RuntimeError("you must add a connection pool object! ")
     __pool[pool.name] = pool
 
 
-def get(pool_name):
+def get_pool(pool_name):
     if not (pool_name in __pool):
         raise RuntimeError("can not find the pool named {}. ".format(pool_name))
     return __pool[pool_name]
@@ -182,7 +182,7 @@ class ConnectionPool:
 
 class Conn(object):
     def __init__(self, db_name):
-        self._conn = get(db_name).get_connection()
+        self._conn = get_pool(db_name).get_connection()
 
     @staticmethod
     def _encode_row(row):

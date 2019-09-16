@@ -1,7 +1,7 @@
 import ssl
 
 from logging import *
-from logging.handlers import RotatingFileHandler, TimedRotatingFileHandler, SMTPHandler
+from logging.handlers import *
 
 __all__ = [
     "DebugHandler",

@@ -1,10 +1,9 @@
 import unittest
 import logging
 
-from pyanalysis.log.handler import DebugHandler
+from pyanalysis.handler import DebugHandler
 
-
-from pyanalysis.database import mysql_pool
+from pyanalysis import mysql_pool
 
 
 class TestMysqlPool(unittest.TestCase):

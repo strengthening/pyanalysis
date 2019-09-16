@@ -1,7 +1,7 @@
 import unittest
 import logging
 
-from pyanalysis.log.handler import *
+from pyanalysis.log_handler import *
 
 
 class TestLogging(unittest.TestCase):
