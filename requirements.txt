@@ -1,2 +1,2 @@
 arrow==0.15.1
-pymysql==0.9.3
+PyMySQL==0.9.3
