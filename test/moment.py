@@ -1,7 +1,7 @@
 import unittest
 
 from datetime import datetime
-from pyanalysis.moment import *
+from pyanalysis.moment import moment
 
 
 class TestMoment(unittest.TestCase):

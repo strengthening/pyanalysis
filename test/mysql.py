@@ -31,7 +31,4 @@ class TestMysqlPool(unittest.TestCase):
             "SELECT * FROM account_future WHERE id = ? LIMIT 1",
             (1,)
         )
-        # print(item)
-        # int(time.time()*1000000)
-
-
+        print(item)

@@ -1,6 +1,6 @@
 import unittest
 
-from pyanalysis.mail import *
+from pyanalysis.mail import Mail
 
 
 class TestMail(unittest.TestCase):
