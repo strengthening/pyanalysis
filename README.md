@@ -1,7 +1,7 @@
 # pyanalysis
 
 <p align="left">
-  <a href="https://github.com/strengthening/pyanalysis"><img alt="GitHub Actions status" src="https://github.com/strengthening/pyanalysis/workflows/Python%20package/badge.svg"></a>
+  <a href="https://github.com/strengthening/pyanalysis"><img alt="GitHub Actions status" src="https://github.com/strengthening/pyanalysis/workflows/build/badge.svg"></a>
 </p>
 
 ## setup the package
