@@ -3,7 +3,7 @@ name: Python package
 on:
   push:
     branches:
-      - 'release/**'
+      - 'release-v*'
     tags:
       - 'release-v*'
 jobs:
@@ -26,10 +26,6 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Check the docker version
-      run: |
-        docker version
-
     - name: Lint with flake8
       run: |
         pip install flake8
@@ -41,3 +37,9 @@ jobs:
 #       run: |
 #         pip install pytest
 #         pytest
+
+  release:
+    - name: Check the docker version
+      run: |
+        docker version
+        echo $GITHUB_REF
