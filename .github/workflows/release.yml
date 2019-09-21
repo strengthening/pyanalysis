@@ -2,8 +2,8 @@ name: release
 
 on:
   push:
-    branches:
-      - 'release-v*'
+#    branches:
+#      - 'release-v*'
     tags:
       - 'release-v*'
 
