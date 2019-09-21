@@ -23,4 +23,13 @@ sudo docker push docker.lcgc.work/dw/pyanalysis:base
 python3 -m unittest test/log/log.py
 
 
+## build
+
+
+## release
+
+git tag -a release-v2.0.5 -m "v2.0.5版本"
+git push origin release-v2.0.5
+
+
 ## todo 封装邮件组件

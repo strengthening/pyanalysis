@@ -15,4 +15,5 @@ jobs:
     - name: Check the docker version
       run: |
         docker version
-        echo ${GITHUB_REF:5}
+        echo ${GITHUB_REF:18}
+        echo ${{ secrets.ALIYUN_SHENZHEN_REGISTER_USERNAME }}
