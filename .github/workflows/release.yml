@@ -12,8 +12,13 @@ jobs:
     runs-on: ubuntu-16.04
 
     steps:
-    - name: Check the docker version
+    - uses: actions/checkout@master
+    - uses: azure/container-actions/docker-login@master
+      with:
+        login-server: registry.cn-hongkong.aliyuncs.com
+        username: ${{ secrets.ALIYUN_SHENZHEN_REGISTER_USERNAME }}
+
+    - name: Push the image to aliyun register
       run: |
-        docker login --username=${{ secrets.ALIYUN_SHENZHEN_REGISTER_USERNAME }} registry.cn-hongkong.aliyuncs.com
         docker build --rm -t registry.cn-hongkong.aliyuncs.com/strengthening/pyanalysis:${GITHUB_REF:18} .
         docker push registry.cn-hongkong.aliyuncs.com/strengthening/pyanalysis:${GITHUB_REF:18}
