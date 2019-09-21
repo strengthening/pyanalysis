@@ -1,22 +1,14 @@
 # pyanalysis
 
-<p align="left">
-  <a href="https://github.com/strengthening/pyanalysis"><img alt="GitHub Actions status" src="https://github.com/strengthening/pyanalysis/workflows/build/badge.svg"></a>
-</p>
+[![action](https://github.com/strengthening/pyanalysis/workflows/build/badge.svg)](https://github.com/strengthening/pyanalysis)
+[![action](https://github.com/strengthening/pyanalysis/workflows/release/badge.svg)](https://github.com/strengthening/pyanalysis)
 
-## setup the package
+## feature
 
-python3 setup.py sdist
-
-## build && push docker
-
-```
-# 构建docker image
-sudo docker build --rm -t docker.lcgc.work/dw/pyanalysis:base .
-
-# push docker image
-sudo docker push docker.lcgc.work/dw/pyanalysis:base
-```
+- mysql & mysql pool
+- log & log_handle
+- simple mail component
+- simple date &time &datetime &timestamp component
 
 ## unittest  
 
@@ -25,11 +17,16 @@ python3 -m unittest test/log/log.py
 
 ## build
 
+It will auto build when you push a branch to the origin.  
+
 
 ## release
 
-git tag -a release-v2.0.5 -m "v2.0.5版本"
-git push origin release-v2.0.5
+Tag like `release-v2.0.1` will trigger the release process. It will push the docker to aliyun.
 
+```
 
-## todo 封装邮件组件
+git tag -a release-$version -m "$version版本"
+git push origin release-$version
+
+```
