@@ -17,6 +17,7 @@ jobs:
       with:
         login-server: registry.cn-hongkong.aliyuncs.com
         username: ${{ secrets.ALIYUN_SHENZHEN_REGISTER_USERNAME }}
+        password:
 
     - name: Push the image to aliyun register
       run: |
