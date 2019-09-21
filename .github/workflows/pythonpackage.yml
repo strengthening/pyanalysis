@@ -3,7 +3,7 @@ name: Python package
 on:
   push:
     branches:
-      - 'releases/**'
+      - 'release/**'
     tags:
       - 'release-v*'
 jobs:
