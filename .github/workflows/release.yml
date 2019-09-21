@@ -15,4 +15,4 @@ jobs:
     - name: Check the docker version
       run: |
         docker version
-        echo $GITHUB_REF
+        echo ${GITHUB_REF:5}
