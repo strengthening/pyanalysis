@@ -14,6 +14,6 @@ jobs:
     steps:
     - name: Check the docker version
       run: |
-        docker version
-        echo ${GITHUB_REF:18}
-        echo ${{ secrets.ALIYUN_SHENZHEN_REGISTER_USERNAME }}
+        docker login --username=${{ secrets.ALIYUN_SHENZHEN_REGISTER_USERNAME }} registry.cn-hongkong.aliyuncs.com
+        docker build --rm -t registry.cn-hongkong.aliyuncs.com/strengthening/pyanalysis:${GITHUB_REF:18} .
+        docker push registry.cn-hongkong.aliyuncs.com/strengthening/pyanalysis:${GITHUB_REF:18}
