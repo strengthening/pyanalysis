@@ -1,9 +1,8 @@
 import unittest
 import logging
 
-from pyanalysis.handler import DebugHandler
-
-from pyanalysis import mysql_pool
+from pyanalysis.log_handler import DebugHandler
+from pyanalysis import mysql
 
 
 class TestMysqlPool(unittest.TestCase):
@@ -14,8 +13,8 @@ class TestMysqlPool(unittest.TestCase):
         logger.addHandler(debug_handler)
         logger.setLevel(debug_handler.level)
 
-        mysql_pool.logger = logger
-        p = mysql_pool.ConnectionPool(
+        mysql.logger = logger
+        p = mysql.ConnectionPool(
             size=1,
             name="localhost",
             host="localhost",
@@ -25,8 +24,8 @@ class TestMysqlPool(unittest.TestCase):
             autocommit=True,
             charset="utf8",
         )
-        mysql_pool.add(p)
-        conn = mysql_pool.Conn("localhost")
+        mysql.add_pool(p)
+        conn = mysql.Conn("localhost")
         item = conn.query_one(
             "SELECT * FROM account_future WHERE id = ? LIMIT 1",
             (1,)
