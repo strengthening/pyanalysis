@@ -12,7 +12,7 @@ __pool = {}
 # set the logger to show the debug or online log
 warnings.filterwarnings("error", category=pymysql.err.Warning)
 logger = logging.getLogger(__name__)
-logger.addHandler(logging.NullHandler)
+# logger.addHandler(logging.NullHandler)
 
 
 def add_pool(pool):
@@ -175,6 +175,8 @@ class ConnectionPool:
             logger.debug("put connection back to pool(%s)", self.name)
         except queue.Full:
             logger.warning("put connection to pool(%s) error, pool is full, size:%d", self.name, self.size())
+        # except Exception as e:
+        #     raise e
 
     def size(self):
         return self._pool.qsize()
@@ -201,7 +203,7 @@ class Conn(object):
         return sql.replace("?", "%s")
 
     @no_warning
-    def query_one(self, sql=None, args=None):
+    def query_one(self, sql=None, args=()):
         result = None
         if logger.level <= logging.DEBUG:
             logger.info(self._format_sql(sql), *args)
@@ -214,7 +216,7 @@ class Conn(object):
         return result
 
     @no_warning
-    def query(self, sql=None, args=None):
+    def query(self, sql=None, args=()):
         result = []
         if logger.level <= logging.DEBUG:
             logger.info(self._format_sql(sql), *args)
@@ -228,7 +230,7 @@ class Conn(object):
         return result
 
     @no_warning
-    def execute(self, sql=None, args=None):
+    def execute(self, sql=None, args=()):
         result = -1
         if logger.level <= logging.DEBUG:
             logger.info(self._format_sql(sql), *args)
@@ -239,7 +241,7 @@ class Conn(object):
         return result
 
     @no_warning
-    def insert(self, sql=None, args=None):
+    def insert(self, sql=None, args=()):
         result = -1
         if logger.level <= logging.DEBUG:
             logger.info(self._format_sql(sql), *args)
@@ -249,6 +251,9 @@ class Conn(object):
             result = cursor.lastrowid
             self._conn.commit()
         return result
+
+    def get_native_conn(self):
+        return self._conn
 
     def __del__(self):
         # 析构并不是立刻进行
@@ -263,7 +268,7 @@ class Trans(Conn):
 
     # tran 将 commit 和 rollback的机会交给调用方
     @no_warning
-    def execute(self, sql=None, args=None):
+    def execute(self, sql=None, args=()):
         result = -1
         if logger.level <= logging.DEBUG:
             logger.info(self._format_sql(sql), *args)
@@ -277,7 +282,7 @@ class Trans(Conn):
             return result
 
     @no_warning
-    def insert(self, sql=None, args=None):
+    def insert(self, sql=None, args=()):
         result = -1
         if logger.level <= logging.DEBUG:
             logger.info(self._format_sql(sql), *args)
