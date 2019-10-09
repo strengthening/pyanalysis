@@ -30,3 +30,9 @@ git tag -a release-$version -m "$version版本"
 git push origin release-$version
 
 ```
+
+## install
+```
+python setup.py sdist
+pip install sdist/XXXX.tar.gz
+```
