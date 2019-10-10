@@ -1,3 +1,4 @@
+import os
 import pymysql
 import warnings
 import queue
@@ -257,7 +258,7 @@ class Conn(object):
 
     def __del__(self):
         # 析构并不是立刻进行
-        if self._conn:
+        if os and os.getpid() and self._conn:
             self._conn.close()
 
 
