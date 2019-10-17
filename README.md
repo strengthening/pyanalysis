@@ -34,5 +34,5 @@ git push origin release-$version
 ## install
 ```
 python setup.py sdist
-pip install sdist/XXXX.tar.gz
+pip install dist/XXXX.tar.gz
 ```
