@@ -256,10 +256,18 @@ class Conn(object):
     def get_native_conn(self):
         return self._conn
 
+    # 手动关闭链接
+    def close(self):
+        self.__close()
+
     def __del__(self):
         # 析构并不是立刻进行
+        self.__close()
+
+    def __close(self):
         if os and os.getpid() and self._conn:
             self._conn.close()
+            self._conn = None
 
 
 class Trans(Conn):
