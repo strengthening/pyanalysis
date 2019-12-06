@@ -5,7 +5,6 @@ from pyanalysis.moment import moment
 
 
 class TestMoment(unittest.TestCase):
-
     def test_switch_timezone(self):
         now = moment.now().to("utc").to("Asia/Shanghai")
         now_utc = moment.utcnow().to("Asia/Shanghai")
@@ -15,7 +14,7 @@ class TestMoment(unittest.TestCase):
             raise RuntimeError()
 
     def test_from_timestamp(self):
-        m = moment.get(1568585483123, tzinfo="Asia/Shanghai")
+        m = moment.get(1568585483123)
         print(m.format("YYYY-MM-DD HH:mm:ss.SSSSSS ZZ"))
 
     def test_get_none(self):
@@ -39,3 +38,8 @@ class TestMoment(unittest.TestCase):
         print("second: " + str(second_timestamp))
         print("millisecond: " + str(millisecond))
         print("microsecond: " + str(microsecond))
+
+    def test_get_floor(self):
+        m = moment.now().to("Asia/Shanghai")
+        print(m.floor("hour"))
+
