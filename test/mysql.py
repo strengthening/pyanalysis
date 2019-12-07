@@ -14,7 +14,7 @@ class TestMysqlPool(unittest.TestCase):
         logger.setLevel(debug_handler.level)
 
         mysql.logger = logger
-        p = mysql.ConnectionPool(
+        p = mysql.Pool(
             size=1,
             name="localhost",
             host="localhost",

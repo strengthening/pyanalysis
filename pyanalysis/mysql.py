@@ -7,7 +7,7 @@ import threading
 import datetime
 import decimal
 
-__all__ = ["ConnectionPool", "Conn", "Trans"]
+__all__ = ["Pool", "Conn", "Trans"]
 __pool = {}
 
 # set the logger to show the debug or online log
@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 def add_pool(pool):
-    if not isinstance(pool, ConnectionPool):
+    if not isinstance(pool, Pool):
         raise RuntimeError("you must add a connection pool object! ")
     __pool[pool.name] = pool
 
@@ -101,7 +101,7 @@ class Connection(pymysql.connections.Connection):
             pymysql.connections.Connection.close(self)
 
 
-class ConnectionPool:
+class Pool:
     """
     Return connection_pool object, which has method can get connection from a pool with timeout and retry feature;
     put a reusable connection back to the pool, etc; also we can create different instance of this class that represent
