@@ -43,3 +43,6 @@ class TestMoment(unittest.TestCase):
         m = moment.now().to("Asia/Shanghai")
         print(m.floor("hour"))
 
+    def test_get_days(self):
+        m = moment.now().to("Asia/Shanghai")
+        print(m.shift(days=2).weekday())

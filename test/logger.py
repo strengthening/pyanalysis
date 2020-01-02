@@ -1,7 +1,9 @@
 import unittest
 import logging
 
-from pyanalysis.log_handler import DebugHandler, ReleaseRotatingFileHandler, ReleaseTimedRotatingFileHandler
+from pyanalysis.logger import DebugHandler
+from pyanalysis.logger import ReleaseRotatingFileHandler
+from pyanalysis.logger import ReleaseTimedRotatingFileHandler
 
 
 class TestLogging(unittest.TestCase):
