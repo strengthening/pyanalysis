@@ -1,7 +1,7 @@
 import unittest
 import logging
 
-from pyanalysis.log_handler import DebugHandler
+from pyanalysis.logger import DebugHandler
 from pyanalysis import mysql
 
 

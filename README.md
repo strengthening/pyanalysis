@@ -6,7 +6,7 @@
 ## feature
 
 - mysql & mysql pool
-- log & log_handle
+- log & logger
 - simple mail component
 - simple date &time &datetime &timestamp component
 
