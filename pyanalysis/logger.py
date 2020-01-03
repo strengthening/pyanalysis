@@ -11,7 +11,7 @@ __all__ = [
 ]
 
 DEFAULT_LOG_FORMAT = "%(asctime)s [%(levelname)s] %(message)s"
-DEFAULT_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
+DEFAULT_DATE_FORMAT = "%Y/%m/%d %H:%M:%S"
 
 
 # use it when you dev or debug your program.

@@ -12,7 +12,7 @@
 
 ## unittest  
 
-python3 -m unittest test/log/log.py
+python3 -m unittest test/logger.py
 
 
 ## build
