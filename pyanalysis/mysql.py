@@ -13,6 +13,8 @@ __pool = {}
 # set the logger to show the debug or online log
 warnings.filterwarnings("error", category=pymysql.err.Warning)
 logger = logging.getLogger(__name__)
+
+
 # logger.addHandler(logging.NullHandler)
 
 
@@ -33,6 +35,7 @@ def no_warning(func):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             return func(*args, **kw)
+
     return wrapper
 
 
@@ -229,6 +232,16 @@ class Conn(object):
                 columns = [desc[0] for desc in cursor.description]
                 result = [dict(zip(columns, self._encode_row(row))) for row in rows]
         return result
+
+    @no_warning
+    def query_range(self, sql=None, args=()):
+        with self._conn.cursor() as cursor:
+            cursor.execute(self._format_sql(sql), args)
+            while True:
+                row = cursor.fetchone()
+                if not row:
+                    break
+                yield dict(zip([desc[0] for desc in cursor.description], self._encode_row(row)))
 
     @no_warning
     def execute(self, sql=None, args=()):

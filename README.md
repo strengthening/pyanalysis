@@ -33,6 +33,6 @@ git push origin release-$version
 
 ## install
 ```
-python setup.py sdist
+python3.7 setup.py sdist
 pip install dist/XXXX.tar.gz
 ```
