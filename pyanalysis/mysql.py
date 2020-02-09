@@ -239,7 +239,7 @@ class Conn(object):
             cursor.execute(self._format_sql(sql), args)
             while True:
                 row = cursor.fetchone()
-                if not row:
+                if row is None:
                     break
                 yield dict(zip([desc[0] for desc in cursor.description], self._encode_row(row)))
 
