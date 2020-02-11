@@ -1,5 +1,6 @@
 import unittest
 import logging
+import time
 
 from pyanalysis.logger import DebugHandler
 from pyanalysis import mysql
@@ -15,19 +16,27 @@ class TestMysqlPool(unittest.TestCase):
 
         mysql.logger = logger
         p = mysql.Pool(
-            size=1,
+            size=3,
             name="localhost",
             host="localhost",
             user="root",
             password="123456",
-            database="ghost",
+            database="ghost_etl",
             autocommit=True,
             charset="utf8",
         )
         mysql.add_pool(p)
+
         conn = mysql.Conn("localhost")
-        item = conn.query_one(
-            "SELECT * FROM account_future WHERE id = ? LIMIT 1",
-            (1,)
+        items = conn.query_range(
+            "SELECT * FROM spot_kline_btc_usd ORDER BY id",
         )
-        print(item)
+
+        start_time = time.time()
+        print(start_time)
+
+        for item in items:
+            pass
+
+        end_time = time.time()
+        print(end_time)
