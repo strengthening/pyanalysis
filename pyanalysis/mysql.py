@@ -7,6 +7,8 @@ import threading
 import datetime
 import decimal
 
+from pymysql.cursors import SSDictCursor
+
 __all__ = ["Pool", "Conn", "Trans"]
 __pool = {}
 
@@ -39,7 +41,7 @@ def no_warning(func):
     return wrapper
 
 
-class Connection(pymysql.connections.Connection):
+class _Connection(pymysql.connections.Connection):
     """
     Return a connection object with or without connection_pool feature.
     This is all the same with pymysql.connections.Connection instance except that with connection_pool feature:
@@ -80,7 +82,7 @@ class Connection(pymysql.connections.Connection):
                     pass
 
     def _recreate(self, *args, **kwargs):
-        conn = Connection(*args, **kwargs)
+        conn = _Connection(*args, **kwargs)
         logger.debug("create new connection due to pool(%s) lacking", self._pool.name)
         return conn
 
@@ -134,8 +136,9 @@ class Pool:
         self.name = name if name else '-'.join(
             [kwargs.get('host', 'localhost'), str(kwargs.get('port', 3306)),
              kwargs.get('user', ''), kwargs.get('database', '')])
+        kwargs["cursorclass"] = SSDictCursor
         for _ in range(size):
-            conn = Connection(*args, **kwargs)
+            conn = _Connection(*args, **kwargs)
             conn._pool = self
             self._pool.put(conn)
 
@@ -191,16 +194,16 @@ class Conn(object):
         self._conn = get_pool(db_name).get_connection()
 
     @staticmethod
-    def _encode_row(row):
-        encoded_row = []
-        for i in range(len(row)):
-            if isinstance(row[i], decimal.Decimal):
-                encoded_row.append(float(row[i]))
-            elif isinstance(row[i], datetime.datetime):
-                encoded_row.append(row[i].strftime("%Y-%m-%d %H:%M:%S"))
-            else:
-                encoded_row.append(row[i])
-        return encoded_row
+    def _encode_input(row):
+        for key in row:
+            value = row[key]
+            if isinstance(value, decimal.Decimal):
+                row[key] = float(value)
+                continue
+            if isinstance(value, datetime.datetime):
+                row[key] = value.strftime("%Y-%m-%d %H:%M:%S")
+                continue
+        return row
 
     @staticmethod
     def _format_sql(sql):
@@ -209,47 +212,56 @@ class Conn(object):
     @no_warning
     def query_one(self, sql=None, args=()):
         result = None
-        if logger.level <= logging.DEBUG:
-            logger.info(self._format_sql(sql), *args)
 
         with self._conn.cursor() as cursor:
             cursor.execute(self._format_sql(sql), args)
+            if logger.level <= logging.DEBUG:
+                logger.info(cursor.mogrify(self._format_sql(sql), args))
+
             row = cursor.fetchone()
             if row:
-                result = dict(zip([desc[0] for desc in cursor.description], self._encode_row(row)))
+                result = self._encode_input(row)
         return result
 
     @no_warning
     def query(self, sql=None, args=()):
         result = []
-        if logger.level <= logging.DEBUG:
-            logger.info(self._format_sql(sql), *args)
 
         with self._conn.cursor() as cursor:
             cursor.execute(self._format_sql(sql), args)
+            if logger.level <= logging.DEBUG:
+                logger.info(cursor.mogrify(self._format_sql(sql), args))
+
             rows = cursor.fetchall()
             if rows:
-                columns = [desc[0] for desc in cursor.description]
-                result = [dict(zip(columns, self._encode_row(row))) for row in rows]
+                result = [self._encode_input(row) for row in rows]
         return result
 
     @no_warning
-    def query_range(self, sql=None, args=()):
+    def query_range(self, sql=None, args=(), size=100):
         with self._conn.cursor() as cursor:
             cursor.execute(self._format_sql(sql), args)
+            if logger.level <= logging.DEBUG:
+                logger.info(cursor.mogrify(self._format_sql(sql), args))
+
             while True:
-                row = cursor.fetchone()
-                if row is None:
+                rows = cursor.fetchmany(size=size)
+                if not rows:
                     break
-                yield dict(zip([desc[0] for desc in cursor.description], self._encode_row(row)))
+
+                for row in rows:
+                    yield self._encode_input(row)
+                if len(rows) < size:
+                    break
 
     @no_warning
     def execute(self, sql=None, args=()):
         result = -1
-        if logger.level <= logging.DEBUG:
-            logger.info(self._format_sql(sql), *args)
 
         with self._conn.cursor() as cursor:
+            if logger.level <= logging.DEBUG:
+                logger.info(cursor.mogrify(self._format_sql(sql), args))
+
             result = cursor.execute(self._format_sql(sql), args)
             self._conn.commit()
         return result
@@ -257,10 +269,11 @@ class Conn(object):
     @no_warning
     def insert(self, sql=None, args=()):
         result = -1
-        if logger.level <= logging.DEBUG:
-            logger.info(self._format_sql(sql), *args)
 
         with self._conn.cursor() as cursor:
+            if logger.level <= logging.DEBUG:
+                logger.info(cursor.mogrify(self._format_sql(sql), args))
+
             cursor.execute(self._format_sql(sql), args)
             result = cursor.lastrowid
             self._conn.commit()
@@ -293,7 +306,7 @@ class Trans(Conn):
     def execute(self, sql=None, args=()):
         result = -1
         if logger.level <= logging.DEBUG:
-            logger.info(self._format_sql(sql), *args)
+            logger.info(self._conn.mogrify(self._format_sql(sql), args))
 
         try:
             with self._conn.cursor() as cursor:
@@ -307,7 +320,7 @@ class Trans(Conn):
     def insert(self, sql=None, args=()):
         result = -1
         if logger.level <= logging.DEBUG:
-            logger.info(self._format_sql(sql), *args)
+            logger.info(self._conn.mogrify(self._format_sql(sql), args))
 
         with self._conn.cursor() as cursor:
             cursor.execute(self._format_sql(sql), args)
