@@ -136,7 +136,7 @@ class Pool:
         self.name = name if name else '-'.join(
             [kwargs.get('host', 'localhost'), str(kwargs.get('port', 3306)),
              kwargs.get('user', ''), kwargs.get('database', '')])
-        kwargs["cursorclass"] = SSDictCursor
+
         for _ in range(size):
             conn = _Connection(*args, **kwargs)
             conn._pool = self
@@ -212,8 +212,8 @@ class Conn(object):
     @no_warning
     def query_one(self, sql=None, args=()):
         result = None
-
-        with self._conn.cursor() as cursor:
+        # use the SSDictCursor, cause it's no need to buffer here.
+        with self._conn.cursor(cursor=SSDictCursor) as cursor:
             cursor.execute(self._format_sql(sql), args)
             if logger.level <= logging.DEBUG:
                 logger.info(cursor.mogrify(self._format_sql(sql), args))
@@ -239,7 +239,9 @@ class Conn(object):
 
     @no_warning
     def query_range(self, sql=None, args=(), size=100):
-        with self._conn.cursor() as cursor:
+
+        # use the SSDictCursor, cause it's no need to buffer here.
+        with self._conn.cursor(cursor=SSDictCursor) as cursor:
             cursor.execute(self._format_sql(sql), args)
             if logger.level <= logging.DEBUG:
                 logger.info(cursor.mogrify(self._format_sql(sql), args))
