@@ -8,6 +8,7 @@ import datetime
 import decimal
 
 from pymysql.cursors import SSDictCursor
+from pymysql.cursors import DictCursor
 
 __all__ = ["Pool", "Conn", "Trans"]
 __pool = {}
@@ -227,7 +228,7 @@ class Conn(object):
     def query(self, sql=None, args=()):
         result = []
 
-        with self._conn.cursor() as cursor:
+        with self._conn.cursor(cursor=DictCursor) as cursor:
             cursor.execute(self._format_sql(sql), args)
             if logger.level <= logging.DEBUG:
                 logger.info(cursor.mogrify(self._format_sql(sql), args))
