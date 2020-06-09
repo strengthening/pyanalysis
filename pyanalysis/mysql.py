@@ -115,7 +115,7 @@ class Pool:
     _MAX_SIZE_LIMIT = 100
     _MIN_SIZE_LIMIT = 3
     _THREAD_LOCAL = threading.local()
-    _THREAD_LOCAL.retry_counter = 0  # a counter used for debug get_connection() method
+    _RETRY_COUNTER = 0  # a counter used for debug get_connection() method
 
     def __init__(self, size=5, name=None, *args, **kwargs):
         if size > self._MAX_SIZE_LIMIT:
@@ -154,17 +154,17 @@ class Pool:
             return conn
         except queue.Empty:
             if retry_num > 0:
-                self._THREAD_LOCAL.retry_counter += 1
+                self._RETRY_COUNTER += 1
                 logger.debug(
                     "retry get connection from pool(%s), the %d times",
                     self.name,
-                    self._THREAD_LOCAL.retry_counter,
+                    self._RETRY_COUNTER,
                 )
                 retry_num -= 1
                 return self.get_connection(timeout, retry_num)
             else:
-                total_times = self._THREAD_LOCAL.retry_counter + 1
-                self._THREAD_LOCAL.retry_counter = 0
+                total_times = self._RETRY_COUNTER + 1
+                self._RETRY_COUNTER = 0
                 raise GetConnectionFromPoolError(
                     "can't get connection from pool({}) within {}*{} second(s)".format(
                         self.name,
