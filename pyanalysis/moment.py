@@ -6,12 +6,16 @@ __all__ = ["moment"]
 class Moment(arrow.Arrow):
     @property
     def second_timestamp(self):
-        return self.timestamp
+        if isinstance(self.timestamp, int):
+            return self.timestamp
+        return self.timestamp()
 
     # 毫秒
     @property
     def millisecond_timestamp(self):
-        return self.timestamp * 1000 + int(self.microsecond / 1000)
+        if isinstance(self.timestamp, int):
+            return self.timestamp * 1000 + int(self.microsecond / 1000)
+        return self.timestamp() * 1000 + int(self.microsecond / 1000)
 
     # 微妙
     @property
