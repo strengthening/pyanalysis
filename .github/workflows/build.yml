@@ -15,9 +15,9 @@ jobs:
         python-version: [3.8, 3.9]
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
@@ -39,7 +39,7 @@ jobs:
     needs: build
     steps:
       - name: Check out code into the workspace directory
-        uses: actions/checkout@v1
+        uses: actions/checkout@v3
 
       - name: Login the Docker service
         uses: azure/docker-login@v1
@@ -59,7 +59,7 @@ jobs:
     needs: release
     steps:
       - name: Repository Dispatch
-        uses: peter-evans/repository-dispatch@v1
+        uses: peter-evans/repository-dispatch@v2
         with:
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
           repository: strengthening/docker
