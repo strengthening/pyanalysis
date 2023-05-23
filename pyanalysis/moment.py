@@ -7,20 +7,22 @@ class Moment(arrow.Arrow):
     @property
     def second_timestamp(self):
         if isinstance(self.timestamp, int):
-            return self.timestamp
-        return self.timestamp()
+            return int(self.timestamp)
+        return int(self.timestamp())
 
     # 毫秒
     @property
     def millisecond_timestamp(self):
         if isinstance(self.timestamp, int):
-            return self.timestamp * 1000 + int(self.microsecond / 1000)
-        return self.timestamp() * 1000 + int(self.microsecond / 1000)
+            return int(self.timestamp * 1000 + int(self.microsecond / 1000))
+        return int(self.timestamp() * 1000 + int(self.microsecond / 1000))
 
     # 微妙
     @property
     def microsecond_timestamp(self):
-        return self.timestamp * 1000000 + self.microsecond
+        if isinstance(self.timestamp, int):
+            return int(self.timestamp * 1000000 + self.microsecond)
+        return int(self.timestamp() * 1000000 + self.microsecond)
 
 
 class MomentFactory(arrow.ArrowFactory):
