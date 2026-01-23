@@ -177,7 +177,11 @@ class Pool:
     def put_connection(self, conn):
         if not conn._pool:
             conn._pool = self
-        conn.cursor().close()
+        # 清理连接状态：回滚未提交的事务，释放锁
+        try:
+            conn.rollback()
+        except Exception:
+            pass
         try:
             self._pool.put_nowait(conn)
             logger.debug("put connection back to pool(%s)", self.name)
@@ -213,8 +217,8 @@ class Conn(object):
     @no_warning
     def query_one(self, sql=None, args=()):
         result = None
-        # use the SSDictCursor, cause it's no need to buffer here.
-        with self._conn.cursor(cursor=SSDictCursor) as cursor:
+        # 使用 DictCursor 而不是 SSDictCursor，避免无缓冲游标的连接状态问题
+        with self._conn.cursor(cursor=DictCursor) as cursor:
             cursor.execute(self._format_sql(sql), args)
             if logger.level <= logging.DEBUG:
                 logger.info(cursor.mogrify(self._format_sql(sql), args))
@@ -308,11 +312,11 @@ class Trans(Conn):
     @no_warning
     def execute(self, sql=None, args=()):
         result = -1
-        if logger.level <= logging.DEBUG:
-            logger.info(self._conn.mogrify(self._format_sql(sql), args))
 
         try:
             with self._conn.cursor() as cursor:
+                if logger.level <= logging.DEBUG:
+                    logger.info(cursor.mogrify(self._format_sql(sql), args))
                 result = cursor.execute(self._format_sql(sql), args)
         except Exception as e:
             print(e)
@@ -322,10 +326,10 @@ class Trans(Conn):
     @no_warning
     def insert(self, sql=None, args=()):
         result = -1
-        if logger.level <= logging.DEBUG:
-            logger.info(self._conn.mogrify(self._format_sql(sql), args))
 
         with self._conn.cursor() as cursor:
+            if logger.level <= logging.DEBUG:
+                logger.info(cursor.mogrify(self._format_sql(sql), args))
             cursor.execute(self._format_sql(sql), args)
             result = cursor.lastrowid
         return result
