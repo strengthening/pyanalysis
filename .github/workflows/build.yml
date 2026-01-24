@@ -2,17 +2,17 @@ name: build
 
 on:
   push:
-    tags:
-      - 'release-v*'
+    branches:
+      - master
 
 jobs:
   build:
     name: Build pyanalysis
     runs-on: ubuntu-latest
     strategy:
-      max-parallel: 2
+      max-parallel: 3
       matrix:
-        python-version: [3.8, 3.9]
+        python-version: ['3.8', '3.9', '3.12']
 
     steps:
     - uses: actions/checkout@v3
@@ -28,40 +28,14 @@ jobs:
     - name: Lint with flake8
       run: |
         pip install flake8
-        # stop the build if there are Python syntax errors or undefined names
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+        flake8 . --count --max-complexity=10 --max-line-length=127 --statistics \
+          --ignore=W503,E203 \
+          --exclude=.git,__pycache__,dist,build
 
-  release:
-    name: Release pyanalysis
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Check out code into the workspace directory
-        uses: actions/checkout@v3
+    - name: Run unit tests
+      run: |
+        python -m unittest test/moment.py
+        python -m unittest test/logger.py
+        python -m unittest test/mysql.py
 
-      - name: Login the Docker service
-        uses: azure/docker-login@v1
-        with:
-          login-server: registry.cn-hongkong.aliyuncs.com
-          username: ${{ secrets.ALIYUN_SHENZHEN_REGISTER_USERNAME }}
-          password: ${{ secrets.ALIYUN_SHENZHEN_REGISTER_PASSWORD }}
 
-      - name: Ready to release, and update the pyanalysis lastest image
-        run: |
-          docker build --rm -t registry.cn-hongkong.aliyuncs.com/strengthening/pyanalysis .
-          docker push registry.cn-hongkong.aliyuncs.com/strengthening/pyanalysis
-
-  dispatch:
-    name: Dispatch
-    runs-on: ubuntu-latest
-    needs: release
-    steps:
-      - name: Repository Dispatch
-        uses: peter-evans/repository-dispatch@v2
-        with:
-          token: ${{ secrets.REPO_ACCESS_TOKEN }}
-          repository: strengthening/docker
-          event-type: pybuild
-          client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'

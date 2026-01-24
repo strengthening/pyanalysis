@@ -29,7 +29,6 @@ MySQL 模块集成测试
 import os
 import unittest
 import decimal
-import datetime
 
 import pymysql
 
