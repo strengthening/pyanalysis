@@ -1,2 +1,2 @@
-arrow==0.17.0
-PyMySQL==1.1.1
+arrow>=1.0.0
+PyMySQL>=1.0.0
