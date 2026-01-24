@@ -38,4 +38,46 @@ jobs:
         python -m unittest test/logger.py
         python -m unittest test/mysql.py
 
+  integration-test:
+    name: MySQL Integration Test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        mysql-version: ['5.7', '8.0', '8.4']
+
+    services:
+      mysql:
+        image: mysql:${{ matrix.mysql-version }}
+        env:
+          MYSQL_ROOT_PASSWORD: testpassword
+          MYSQL_DATABASE: test_pyanalysis
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Run MySQL integration tests
+      env:
+        MYSQL_HOST: 127.0.0.1
+        MYSQL_PORT: 3306
+        MYSQL_USER: root
+        MYSQL_PASSWORD: testpassword
+        MYSQL_DATABASE: test_pyanalysis
+      run: |
+        python -m unittest test/mysql_integration.py
+
 
