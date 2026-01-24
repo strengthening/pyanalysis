@@ -8,4 +8,4 @@ test:
 	@echo "TODO test shell"
 
 install:
-	python3 setup.py sdist && sudo pip3 install dist/pyanalysis-2.0.2.tar.gz
+	python3 -m build && pip install dist/pyanalysis-*.whl --force-reinstall

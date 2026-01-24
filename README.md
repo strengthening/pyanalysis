@@ -197,18 +197,25 @@ flake8 . --max-line-length=127
 ### Build
 
 ```bash
-python3 setup.py sdist
-pip install dist/pyanalysis-*.tar.gz
+pip install build
+python -m build
+pip install dist/pyanalysis-*.whl
 ```
 
 ## Release
 
-Create a tag with `release-v*` pattern to trigger GitHub Actions release:
+Create a tag with `v*` pattern to trigger GitHub Actions release (runs build workflow first, then publishes):
 
 ```bash
-git tag -a release-v2.0.3 -m "v2.0.3"
-git push origin release-v2.0.3
+git tag -a v2.0.3 -m "v2.0.3"
+git push origin v2.0.3
 ```
+
+The release workflow will automatically:
+- Run the build workflow (lint + unit tests + MySQL integration tests)
+- Update version in `pyanalysis/__init__.py` from the tag
+- Build source distribution and wheel
+- Create GitHub Release with release notes
 
 ## License
 
