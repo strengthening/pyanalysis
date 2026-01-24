@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pyanalysis"
+dynamic = ["version"]
+description = "A lightweight Python utility library providing MySQL connection pooling, logging handlers, email utilities, and datetime helpers."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.8"
+authors = [
+    { name = "strengthening", email = "ducg@foxmail.com" }
+]
+keywords = ["mysql", "logging", "mail", "datetime", "utilities"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+    "arrow>=1.0.0",
+    "PyMySQL>=1.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/strengthening/pyanalysis"
+Repository = "https://github.com/strengthening/pyanalysis"
+Issues = "https://github.com/strengthening/pyanalysis/issues"
+
+[tool.setuptools.dynamic]
+version = {attr = "pyanalysis.__version__"}
+
+[tool.setuptools.packages.find]
+include = ["pyanalysis*"]
+
+[tool.flake8]
+max-line-length = 127
+max-complexity = 10
+ignore = ["W503", "E203"]
+exclude = [".git", "__pycache__", "dist", "build", "*.egg-info"]

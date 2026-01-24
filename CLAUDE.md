@@ -27,13 +27,9 @@ pip install -r requirements.txt
 
 ### Build and install locally
 ```bash
-python3 setup.py sdist
-pip install dist/pyanalysis-2.0.2.tar.gz
-```
-
-Or use make:
-```bash
-make install
+pip install build
+python -m build
+pip install dist/pyanalysis-*.whl
 ```
 
 ### Lint
@@ -69,8 +65,8 @@ flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statist
 
 ## Release Process
 
-Tag with `release-v*` pattern to trigger GitHub Actions build:
+Tag with `v*` pattern to trigger GitHub Actions release:
 ```bash
-git tag -a release-v2.0.3 -m "v2.0.3"
-git push origin release-v2.0.3
+git tag -a v2.0.3 -m "v2.0.3"
+git push origin v2.0.3
 ```
