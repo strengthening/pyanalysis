@@ -6,8 +6,13 @@ on:
       - 'v*'
 
 jobs:
+  build:
+    name: Run Build Workflow
+    uses: ./.github/workflows/build.yml
+
   release:
     name: Build and Release
+    needs: build
     runs-on: ubuntu-latest
 
     steps:
