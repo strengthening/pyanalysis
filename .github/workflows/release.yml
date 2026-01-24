@@ -18,6 +18,13 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Update version from tag
+      run: |
+        VERSION=${GITHUB_REF#refs/tags/v}
+        echo "Version: $VERSION"
+        sed -i "s/__version__ = \".*\"/__version__ = \"$VERSION\"/" pyanalysis/__init__.py
+        cat pyanalysis/__init__.py
+
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
