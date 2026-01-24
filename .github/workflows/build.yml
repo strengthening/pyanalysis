@@ -78,6 +78,5 @@ jobs:
         MYSQL_PASSWORD: testpassword
         MYSQL_DATABASE: test_pyanalysis
       run: |
-        python -m unittest test/mysql_integration.py
-
+        python -m unittest test/mysql_integration.py -v
 
