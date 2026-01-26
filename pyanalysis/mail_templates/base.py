@@ -5,7 +5,7 @@ from typing import Optional
 from jinja2 import Environment, FileSystemLoader
 
 from pyanalysis.mail import HtmlContent
-from pyanalysis.templates._styles import COLORS, STYLES, ICONS, FONT_FAMILY
+from pyanalysis.mail_templates._styles import COLORS, STYLES, ICONS, FONT_FAMILY
 
 __all__ = ["BaseTemplate"]
 

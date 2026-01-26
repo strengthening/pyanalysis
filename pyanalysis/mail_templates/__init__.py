@@ -11,7 +11,7 @@ Available Templates:
 
 Example:
     from pyanalysis.mail import Mail
-    from pyanalysis.templates import NotificationTemplate
+    from pyanalysis.mail_templates import NotificationTemplate
 
     template = NotificationTemplate(
         title="Order Shipped",
@@ -25,11 +25,11 @@ Example:
     mail.send("Order Update", ["customer@example.com"])
 """
 
-from pyanalysis.templates.base import BaseTemplate
-from pyanalysis.templates.notification import NotificationTemplate
-from pyanalysis.templates.table import TableTemplate
-from pyanalysis.templates.alert import AlertTemplate
-from pyanalysis.templates.status import StatusTemplate, Step
+from pyanalysis.mail_templates.base import BaseTemplate
+from pyanalysis.mail_templates.notification import NotificationTemplate
+from pyanalysis.mail_templates.table import TableTemplate
+from pyanalysis.mail_templates.alert import AlertTemplate
+from pyanalysis.mail_templates.status import StatusTemplate, Step
 
 __all__ = [
     "BaseTemplate",
