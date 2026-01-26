@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pyanalysis.templates.base import BaseTemplate
+from pyanalysis.mail_templates.base import BaseTemplate
 
 __all__ = ["NotificationTemplate"]
 

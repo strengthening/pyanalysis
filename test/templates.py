@@ -1,7 +1,7 @@
 import unittest
 
 from pyanalysis.mail import HtmlContent
-from pyanalysis.templates import (
+from pyanalysis.mail_templates import (
     BaseTemplate,
     NotificationTemplate,
     TableTemplate,
