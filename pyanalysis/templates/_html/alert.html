@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+{% set severity_colors = {
+    "critical": {"bg": colors.critical_bg, "border": colors.critical_border, "text": colors.critical},
+    "warning": {"bg": colors.warning_bg, "border": colors.warning_border, "text": colors.warning},
+    "info": {"bg": colors.info_bg, "border": colors.info_border, "text": colors.info}
+} %}
+{% set sev = severity_colors.get(severity, severity_colors.info) %}
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+    <tr>
+        <td style="background-color: {{ sev.bg }}; border: 1px solid {{ sev.border }}; border-radius: 4px; padding: 16px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                    <td width="40" valign="top" style="padding-right: 12px;">
+                        {% if severity == "critical" %}
+                        {{ icons.critical|safe }}
+                        {% elif severity == "warning" %}
+                        {{ icons.warning|safe }}
+                        {% else %}
+                        {{ icons.info|safe }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        <h1 style="{{ styles.title }} margin-bottom: 8px; color: {{ sev.text }};">{{ title }}</h1>
+                        <p style="{{ styles.content }} margin-bottom: 0;">{{ message }}</p>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    {% if source or timestamp %}
+    <tr>
+        <td style="padding-top: 16px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                {% if source %}
+                <tr>
+                    <td style="color: {{ colors.text_secondary }}; font-size: 13px; padding-bottom: 4px;">
+                        <strong>来源:</strong> {{ source }}
+                    </td>
+                </tr>
+                {% endif %}
+                {% if timestamp %}
+                <tr>
+                    <td style="color: {{ colors.text_secondary }}; font-size: 13px;">
+                        <strong>时间:</strong> {{ timestamp }}
+                    </td>
+                </tr>
+                {% endif %}
+            </table>
+        </td>
+    </tr>
+    {% endif %}
+    {% if details %}
+    <tr>
+        <td style="padding-top: 16px;">
+            <h3 style="font-size: 14px; font-weight: 600; color: {{ colors.text_primary }}; margin: 0 0 8px 0;">详情</h3>
+            <table role="presentation" style="{{ styles.table }}">
+                {% for key, value in details.items() %}
+                <tr>
+                    <td style="{{ styles.td }} width: 30%; background-color: {{ colors.table_header_bg }}; font-weight: 500;">{{ key }}</td>
+                    <td style="{{ styles.td }}">{{ value }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </td>
+    </tr>
+    {% endif %}
+    {% if action_items %}
+    <tr>
+        <td style="padding-top: 16px;">
+            <h3 style="font-size: 14px; font-weight: 600; color: {{ colors.text_primary }}; margin: 0 0 8px 0;">建议操作</h3>
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                {% for item in action_items %}
+                <tr>
+                    <td style="padding: 4px 0; color: {{ colors.text_primary }}; font-size: 14px;">
+                        {{ loop.index }}. {{ item }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+        </td>
+    </tr>
+    {% endif %}
+</table>
+{% endblock %}

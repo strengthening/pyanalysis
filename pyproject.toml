@@ -26,6 +26,7 @@ classifiers = [
 dependencies = [
     "arrow>=1.0.0",
     "PyMySQL>=1.0.0",
+    "Jinja2>=3.0.0",
 ]
 
 [project.urls]
