@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+    {% if icon %}
+    <tr>
+        <td align="center" style="padding-bottom: 16px;">
+            {{ icons[icon]|safe }}
+        </td>
+    </tr>
+    {% endif %}
+    <tr>
+        <td>
+            <h1 style="{{ styles.title }} text-align: center;">{{ title }}</h1>
+        </td>
+    </tr>
+    {% if subtitle %}
+    <tr>
+        <td>
+            <p style="{{ styles.subtitle }} text-align: center;">{{ subtitle }}</p>
+        </td>
+    </tr>
+    {% endif %}
+    <tr>
+        <td>
+            <p style="{{ styles.content }}">{{ content }}</p>
+        </td>
+    </tr>
+    {% if action_url and action_text %}
+    <tr>
+        <td align="center" style="padding-top: 16px;">
+            <a href="{{ action_url }}" style="{{ styles.button }}">{{ action_text }}</a>
+        </td>
+    </tr>
+    {% endif %}
+</table>
+{% endblock %}

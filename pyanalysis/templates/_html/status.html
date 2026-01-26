@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+    <tr>
+        <td>
+            <h1 style="{{ styles.title }}">{{ title }}</h1>
+        </td>
+    </tr>
+    <tr>
+        <td style="padding: 16px 0;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                    {% if previous_status %}
+                    <td style="text-align: center; padding: 8px;">
+                        <span style="{{ styles.badge }} background-color: {{ colors.border }}; color: {{ colors.text_secondary }};">{{ previous_status }}</span>
+                    </td>
+                    <td style="text-align: center; width: 40px; color: {{ colors.text_muted }};">→</td>
+                    {% endif %}
+                    <td style="text-align: center; padding: 8px;">
+                        <span style="{{ styles.badge }} background-color: {{ colors.success_bg }}; color: {{ colors.success }}; border: 1px solid {{ colors.success_border }};">{{ current_status }}</span>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    {% if progress is not none %}
+    <tr>
+        <td style="padding: 8px 0;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                    <td style="font-size: 13px; color: {{ colors.text_secondary }};">进度</td>
+                    <td style="text-align: right; font-size: 13px; color: {{ colors.primary }}; font-weight: 600;">{{ progress }}%</td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="padding-top: 4px;">
+                        <div style="{{ styles.progress_bar_container }}">
+                            <div style="{{ styles.progress_bar_fill }} width: {{ progress }}%;"></div>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    {% endif %}
+    {% if eta %}
+    <tr>
+        <td style="padding: 8px 0; font-size: 13px; color: {{ colors.text_secondary }};">
+            <strong>预计完成时间:</strong> {{ eta }}
+        </td>
+    </tr>
+    {% endif %}
+    {% if steps %}
+    <tr>
+        <td style="padding-top: 16px;">
+            <h3 style="font-size: 14px; font-weight: 600; color: {{ colors.text_primary }}; margin: 0 0 12px 0;">步骤进度</h3>
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                {% for step in steps %}
+                <tr>
+                    <td style="padding: 8px 0; border-bottom: 1px solid {{ colors.border }};">
+                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                            <tr>
+                                <td width="24" valign="top">
+                                    {% if step.status == "completed" %}
+                                    <span style="display: inline-block; width: 20px; height: 20px; border-radius: 50%; background-color: {{ colors.success }}; color: white; text-align: center; line-height: 20px; font-size: 12px;">✓</span>
+                                    {% elif step.status == "in_progress" %}
+                                    <span style="display: inline-block; width: 20px; height: 20px; border-radius: 50%; background-color: {{ colors.primary }}; color: white; text-align: center; line-height: 20px; font-size: 12px;">●</span>
+                                    {% else %}
+                                    <span style="display: inline-block; width: 20px; height: 20px; border-radius: 50%; background-color: {{ colors.border }}; color: {{ colors.text_muted }}; text-align: center; line-height: 20px; font-size: 12px;">{{ loop.index }}</span>
+                                    {% endif %}
+                                </td>
+                                <td style="padding-left: 8px;">
+                                    <span style="font-size: 14px; color: {% if step.status == 'completed' %}{{ colors.text_secondary }}{% elif step.status == 'in_progress' %}{{ colors.primary }}{% else %}{{ colors.text_muted }}{% endif %};">{{ step.name }}</span>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+        </td>
+    </tr>
+    {% endif %}
+    {% if metadata %}
+    <tr>
+        <td style="padding-top: 16px;">
+            <h3 style="font-size: 14px; font-weight: 600; color: {{ colors.text_primary }}; margin: 0 0 8px 0;">详细信息</h3>
+            <table role="presentation" style="{{ styles.table }}">
+                {% for key, value in metadata.items() %}
+                <tr>
+                    <td style="{{ styles.td }} width: 30%; background-color: {{ colors.table_header_bg }}; font-weight: 500;">{{ key }}</td>
+                    <td style="{{ styles.td }}">{{ value }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </td>
+    </tr>
+    {% endif %}
+</table>
+{% endblock %}

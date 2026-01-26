@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+    <tr>
+        <td>
+            <h1 style="{{ styles.title }}">{{ title }}</h1>
+        </td>
+    </tr>
+    {% if summary %}
+    <tr>
+        <td>
+            <p style="{{ styles.subtitle }}">{{ summary }}</p>
+        </td>
+    </tr>
+    {% endif %}
+    <tr>
+        <td>
+            <table role="presentation" style="{{ styles.table }}">
+                <thead>
+                    <tr>
+                        {% if show_row_numbers %}
+                        <th style="{{ styles.th }} width: 40px;">#</th>
+                        {% endif %}
+                        {% for header in headers %}
+                        <th style="{{ styles.th }}">{{ header }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in rows %}
+                    {% set row_index = loop.index0 %}
+                    {% set is_highlighted = row_index in highlight_rows %}
+                    <tr>
+                        {% if show_row_numbers %}
+                        <td style="{{ styles.td }}{% if is_highlighted %} background-color: {{ colors.table_highlight }};{% endif %}">{{ loop.index }}</td>
+                        {% endif %}
+                        {% for cell in row %}
+                        <td style="{{ styles.td }}{% if is_highlighted %} background-color: {{ colors.table_highlight }};{% endif %}">{{ cell }}</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </td>
+    </tr>
+</table>
+{% endblock %}
